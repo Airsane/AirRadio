@@ -16,11 +16,9 @@
 
 <body class="bg-black text-white font-sans">
     <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold">AirRadio</h1>
-            <p class="text-gray-400">Your favorite radio stations in one place</p>
+        <header class="mb-8 flex items-center">
+            <img src="{{ asset('assets/images/logo.png') }}" alt="AirRadio Logo" class="h-50 mr-4">
         </header>
-
         <main>
             <livewire:radio-search />
         </main>
