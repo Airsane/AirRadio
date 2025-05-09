@@ -57,6 +57,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                     </svg>
                 </button>
+                <button id="cast-btn" class="text-gray-400 hover:text-white p-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-1.12-2.5-2.5-2.5S6 10.62 6 12c0 1.38 1.12 2.5 2.5 2.5z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15.5c-1.66 0-3 1.34-3 3v2h12v-2c0-1.66-1.34-3-3-3H5zM19 6.5h-1v-1c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v1H5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-9c0-1.1-.9-2-2-2z" />
+                    </svg>
+                </button>
                 <div id="loading-indicator" class="hidden ml-2">
                     <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-green-500"></div>
                 </div>
@@ -71,6 +77,7 @@
             const audioPlayer = document.getElementById('audio-player');
             const playerBar = document.getElementById('player-bar');
             const playPauseBtn = document.getElementById('play-pause-btn');
+            const castBtn = document.getElementById('cast-btn');
             const currentRadioName = document.getElementById('current-radio-name');
             const currentRadioIcon = document.getElementById('current-radio-icon');
             const currentRadioLanguage = document.getElementById('current-radio-language');
@@ -82,6 +89,7 @@
             let isPlaying = false;
             let isLoading = false;
             let currentRadio = null;
+            let castSession = null;
 
             // Set initial volume
             audioPlayer.volume = volumeControl.value / 100;
@@ -102,16 +110,31 @@
             // Volume control event listeners
             volumeControl.addEventListener('input', () => {
                 audioPlayer.volume = volumeControl.value / 100;
+
+                // If casting, update cast volume
+                if (castSession) {
+                    castSession.setVolume(volumeControl.value / 100);
+                }
             });
 
             volumeUpBtn.addEventListener('click', () => {
                 volumeControl.value = Math.min(parseInt(volumeControl.value) + 10, 100);
                 audioPlayer.volume = volumeControl.value / 100;
+
+                // If casting, update cast volume
+                if (castSession) {
+                    castSession.setVolume(volumeControl.value / 100);
+                }
             });
 
             volumeDownBtn.addEventListener('click', () => {
                 volumeControl.value = Math.max(parseInt(volumeControl.value) - 10, 0);
                 audioPlayer.volume = volumeControl.value / 100;
+
+                // If casting, update cast volume
+                if (castSession) {
+                    castSession.setVolume(volumeControl.value / 100);
+                }
             });
 
             // Play radio function
@@ -123,27 +146,71 @@
                 loadingIndicator.classList.remove('hidden');
                 playPauseBtn.classList.add('opacity-50');
 
-                audioPlayer.src = radio.url;
-                audioPlayer.play();
-                isPlaying = true;
+                // If casting, play on Chromecast
+                if (castSession) {
+                    const mediaInfo = new chrome.cast.media.MediaInfo(radio.url, 'audio/mp3');
+                    mediaInfo.metadata = new chrome.cast.media.MusicTrackMetadata();
+                    mediaInfo.metadata.title = radio.name;
+                    mediaInfo.metadata.artist = radio.language;
+                    mediaInfo.metadata.images = [
+                        { url: radio.icon }
+                    ];
+
+                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    castSession.loadMedia(request).then(
+                        function() {
+                            isPlaying = true;
+                            isLoading = false;
+                            loadingIndicator.classList.add('hidden');
+                            playPauseBtn.classList.remove('opacity-50');
+                            updatePlayPauseButton();
+                        },
+                        function(error) {
+                            console.error('Error loading media: ' + error);
+                            // Fallback to local playback
+                            playLocalRadio(radio);
+                        }
+                    );
+                } else {
+                    // Play locally
+                    playLocalRadio(radio);
+                }
 
                 // Update player bar
                 currentRadioName.textContent = radio.name;
                 currentRadioIcon.src = radio.icon;
                 currentRadioLanguage.querySelector('span:last-child').textContent = radio.language;
                 playerBar.classList.remove('hidden');
+            }
 
+            function playLocalRadio(radio) {
+                audioPlayer.src = radio.url;
+                audioPlayer.play();
+                isPlaying = true;
                 updatePlayPauseButton();
             }
 
             // Play/Pause button functionality
             playPauseBtn.addEventListener('click', () => {
-                if (isPlaying) {
-                    audioPlayer.pause();
-                    isPlaying = false;
+                if (castSession && castSession.media && castSession.media.length > 0) {
+                    // Control Chromecast playback
+                    const mediaSession = castSession.media[0];
+                    if (isPlaying) {
+                        mediaSession.pause(null);
+                        isPlaying = false;
+                    } else {
+                        mediaSession.play(null);
+                        isPlaying = true;
+                    }
                 } else {
-                    audioPlayer.play();
-                    isPlaying = true;
+                    // Control local playback
+                    if (isPlaying) {
+                        audioPlayer.pause();
+                        isPlaying = false;
+                    } else {
+                        audioPlayer.play();
+                        isPlaying = true;
+                    }
                 }
                 updatePlayPauseButton();
             });
@@ -160,7 +227,7 @@
 
             // Add click event listener for radio cards
             document.addEventListener('click', function(e) {
-                const radioCard = e.target.closest('.radio-card');
+                const radioCard = e.target.closest('.radio-card').querySelector('.cursor-pointer');
                 if (radioCard) {
                     const radio = {
                         url: radioCard.dataset.url,
@@ -171,6 +238,68 @@
                     playRadio(radio);
                 }
             });
+
+            // Chromecast integration
+            // Load the Cast framework
+            window['__onGCastApiAvailable'] = function(isAvailable) {
+                if (isAvailable) {
+                    initializeCastApi();
+                }
+            };
+
+            function initializeCastApi() {
+                cast.framework.CastContext.getInstance().setOptions({
+                    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+                    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+                });
+
+                const castContext = cast.framework.CastContext.getInstance();
+
+                // Listen for cast state changes
+                castContext.addEventListener(
+                    cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+                    function(event) {
+                        switch(event.sessionState) {
+                            case cast.framework.SessionState.SESSION_STARTED:
+                            case cast.framework.SessionState.SESSION_RESUMED:
+                                castSession = castContext.getCurrentSession();
+                                // If we have a current radio, start casting it
+                                if (currentRadio) {
+                                    audioPlayer.pause();
+                                    playRadio(currentRadio);
+                                }
+                                castBtn.classList.add('text-green-500');
+                                break;
+                            case cast.framework.SessionState.SESSION_ENDED:
+                                castSession = null;
+                                castBtn.classList.remove('text-green-500');
+                                // If we were playing, resume local playback
+                                if (isPlaying && currentRadio) {
+                                    playLocalRadio(currentRadio);
+                                }
+                                break;
+                        }
+                    }
+                );
+
+                // Cast button click handler
+                castBtn.addEventListener('click', function() {
+                    if (castSession) {
+                        // Disconnect from current session
+                        castSession.endSession(true);
+                    } else {
+                        // Request a new session
+                        castContext.requestSession();
+                    }
+                });
+            }
+
+            // Load the Cast API
+            if (!window.chrome || !window.chrome.cast) {
+                const script = document.createElement('script');
+                script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+                document.head.appendChild(script);
+            }
         });
     </script>
     @livewireScripts

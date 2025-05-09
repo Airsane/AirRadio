@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('url');
             $table->text("icon")->nullable();
             $table->enum('language', ['czech','slovak', 'english', 'german', 'hungarian', 'polish', 'romanian', 'slovak', 'turkish', 'ukrainian','arabic','bulgarian','latin'])->default('czech');
-            $table->boolean('featured')->default(false);
+            $table->boolean('favorite')->default(false);
             $table->timestamps();
         });
     }

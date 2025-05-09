@@ -13,7 +13,7 @@ return [
      * usually in the form of a reverse domain name.
      * For example: com.nativephp.app
      */
-    'app_id' => env('NATIVEPHP_APP_ID', 'com.nativephp.app'),
+    'app_id' => env('NATIVEPHP_APP_ID', 'com.airsane.airadio'),
 
     /**
      * If your application allows deep linking, you can specify the scheme
@@ -29,7 +29,7 @@ return [
     /**
      * The author of your application.
      */
-    'author' => env('NATIVEPHP_APP_AUTHOR'),
+    'author' => env('NATIVEPHP_APP_AUTHOR', 'Airsane'),
 
     /**
      * The copyright notice for your application.
@@ -138,11 +138,11 @@ return [
      * Define your own scripts to run before and after the build process.
      */
     'prebuild' => [
-        // 'npm run build',
+        'npm run build', // Run a command before the build
+        'php artisan optimize', // Run another command before the build
     ],
-
     'postbuild' => [
-        // 'rm -rf public/build',
+        'npm run release', // Run a command after the build
     ],
 
     /**
