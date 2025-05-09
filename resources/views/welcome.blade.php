@@ -26,7 +26,7 @@
         </main>
     </div>
 
-    <div id="player-bar" class="fixed bottom-0 left-0 right-0 bg-gray-900 p-4 hidden backdrop-blur-lg bg-opacity-90 border-t border-gray-800 shadow-lg transition-all duration-300">
+    <div id="player-bar" class="fixed bottom-0 left-0 right-0 bg-gray-900 p-4 hidden backdrop-blur-lg bg-opacity-90 border-t border-gray-800 shadow-lg transition-all duration-300 z-50">
         <div class="container mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <img id="current-radio-icon" src="" alt="Radio icon" class="w-14 h-14 rounded-lg shadow-md object-cover">
@@ -227,15 +227,24 @@
 
             // Add click event listener for radio cards
             document.addEventListener('click', function(e) {
-                const radioCard = e.target.closest('.radio-card').querySelector('.cursor-pointer');
-                if (radioCard) {
-                    const radio = {
-                        url: radioCard.dataset.url,
-                        name: radioCard.dataset.name,
-                        language: radioCard.dataset.language,
-                        icon: radioCard.dataset.icon
-                    };
-                    playRadio(radio);
+                const radioCardElement = e.target.closest('.radio-card');
+                if (radioCardElement) {
+                    // Check if the click was on the favorite button
+                    if (e.target.closest('button[wire\\:click]')) {
+                        // If it was the favorite button, don't play the radio
+                        return;
+                    }
+
+                    const radioCard = radioCardElement.querySelector('.cursor-pointer');
+                    if (radioCard) {
+                        const radio = {
+                            url: radioCard.dataset.url,
+                            name: radioCard.dataset.name,
+                            language: radioCard.dataset.language,
+                            icon: radioCard.dataset.icon
+                        };
+                        playRadio(radio);
+                    }
                 }
             });
 
