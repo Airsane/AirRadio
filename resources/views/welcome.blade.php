@@ -39,6 +39,13 @@
                 </div>
             </div>
             <div class="flex items-center space-x-6">
+                <div id="sound-wave" class="hidden h-8 flex items-center space-x-1">
+                    <div class="w-1 bg-green-500 rounded-full animate-sound-wave" style="height: 30%; animation-delay: -0.5s;"></div>
+                    <div class="w-1 bg-green-500 rounded-full animate-sound-wave" style="height: 60%; animation-delay: -0.3s;"></div>
+                    <div class="w-1 bg-green-500 rounded-full animate-sound-wave" style="height: 100%; animation-delay: -0.1s;"></div>
+                    <div class="w-1 bg-green-500 rounded-full animate-sound-wave" style="height: 80%; animation-delay: -0.4s;"></div>
+                    <div class="w-1 bg-green-500 rounded-full animate-sound-wave" style="height: 40%; animation-delay: -0.2s;"></div>
+                </div>
                 <div class="flex items-center bg-gray-800 rounded-full px-3 py-1">
                     <button id="volume-down-btn" class="text-gray-400 hover:text-white p-2 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,6 +92,7 @@
             const volumeUpBtn = document.getElementById('volume-up-btn');
             const volumeDownBtn = document.getElementById('volume-down-btn');
             const loadingIndicator = document.getElementById('loading-indicator');
+            const soundWave = document.getElementById('sound-wave');
 
             let isPlaying = false;
             let isLoading = false;
@@ -99,12 +107,20 @@
                 isLoading = true;
                 loadingIndicator.classList.remove('hidden');
                 playPauseBtn.classList.add('opacity-50');
+                soundWave.classList.add('hidden');
             });
 
             audioPlayer.addEventListener('playing', () => {
                 isLoading = false;
                 loadingIndicator.classList.add('hidden');
                 playPauseBtn.classList.remove('opacity-50');
+                if (isPlaying) {
+                    soundWave.classList.remove('hidden');
+                }
+            });
+
+            audioPlayer.addEventListener('pause', () => {
+                soundWave.classList.add('hidden');
             });
 
             // Volume control event listeners
@@ -145,6 +161,7 @@
                 isLoading = true;
                 loadingIndicator.classList.remove('hidden');
                 playPauseBtn.classList.add('opacity-50');
+                soundWave.classList.add('hidden');
 
                 // If casting, play on Chromecast
                 if (castSession) {
@@ -163,6 +180,7 @@
                             isLoading = false;
                             loadingIndicator.classList.add('hidden');
                             playPauseBtn.classList.remove('opacity-50');
+                            soundWave.classList.remove('hidden');
                             updatePlayPauseButton();
                         },
                         function(error) {
@@ -198,18 +216,26 @@
                     if (isPlaying) {
                         mediaSession.pause(null);
                         isPlaying = false;
+                        soundWave.classList.add('hidden');
                     } else {
                         mediaSession.play(null);
                         isPlaying = true;
+                        if (!isLoading) {
+                            soundWave.classList.remove('hidden');
+                        }
                     }
                 } else {
                     // Control local playback
                     if (isPlaying) {
                         audioPlayer.pause();
                         isPlaying = false;
+                        soundWave.classList.add('hidden');
                     } else {
                         audioPlayer.play();
                         isPlaying = true;
+                        if (!isLoading) {
+                            soundWave.classList.remove('hidden');
+                        }
                     }
                 }
                 updatePlayPauseButton();
@@ -311,6 +337,18 @@
             }
         });
     </script>
+
+    <style>
+        @keyframes sound-wave {
+            0% { height: 10%; }
+            50% { height: 100%; }
+            100% { height: 10%; }
+        }
+
+        .animate-sound-wave {
+            animation: sound-wave 1s ease-in-out infinite;
+        }
+    </style>
     @livewireScripts
 </body>
 
