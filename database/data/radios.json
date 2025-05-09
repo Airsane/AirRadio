@@ -1,0 +1,20 @@
+[
+  {
+    "name": "NCS 24/7",
+    "url": "https://stream-176.zeno.fm/ez4m4918n98uv?zs=3oZGF_f_Tbyup9CE7a-GIw",
+    "icon": "https://zeno.fm/_next/image/?url=https%3A%2F%2Fimages.zeno.fm%2F47sHHnIehZJ5eCN68MemCQGCI18awRN2aPXd5oSLNtY%2Frs%3Afit%3A240%3A240%2Fg%3Ace%3A0%3A0%2FaHR0cHM6Ly9zdHJlYW0tdG9vbHMuemVub21lZGlhLmNvbS9jb250ZW50L3N0YXRpb25zL2FneHpmbnBsYm04dGMzUmhkSE55TWdzU0NrRjFkR2hEYkdsbGJuUVlnSUNnLTdlaW9Rb01DeElPVTNSaGRHbHZibEJ5YjJacGJHVVlnSUR3N0xUQXpBb01vZ0VFZW1WdWJ3L2ltYWdlLz91cGRhdGVkPTE2NjExNTI4MzcwMDA.webp&w=128&q=100",
+    "language": "czech"
+  },
+  {
+    "name": "Best Of Rock",
+    "url": "http://mp3stream4.abradio.cz/bestofrock128.mp3",
+    "icon": null,
+    "language": "czech"
+  },
+  {
+    "name": "Český Impuls",
+    "url": "http://icecast6.play.cz/cesky-impuls.mp3",
+    "icon": "https://mytuner.global.ssl.fastly.net/media/tvos_radios/4pn6k2gnfueh.jpg",
+    "language": "czech"
+  }
+]
